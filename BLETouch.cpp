@@ -99,6 +99,9 @@ static const PROGMEM unsigned char HID_Touch[] = {
   0x95,  0x01  ,  // Report count 1
   0x81,  0x02  ,  // Input Data Var Abs
 
+  // Necessary Feature report that Windows OS required.
+  // necessary to respond to CUSTOM_HID_REQ_GET_REPORT.
+  // and return the Maximum contact (finger) number supported.
   0x85,  0x02  ,  // Report ID 0x02
   0x09,  0x55  ,  // Usage Contact Count Maximum
   0x25,  0x0A  ,  // Logical Maximum 10
@@ -108,6 +111,8 @@ static const PROGMEM unsigned char HID_Touch[] = {
   0x95,  0x01  ,  // report count 1
   0xB1,  0x02  ,  // Feature Data Var Abs
 
+  // Necessary Feature report that Windows OS required.
+  // But Not necessary to send the actual blob data.
   0x85, 0x44,                         //   REPORT_ID (Feature)
   0x06, 0x00, 0xff,                   //   USAGE_PAGE (Vendor Defined)
   0x09, 0xC5,                         //   USAGE (Vendor Usage 0xC5)

@@ -282,9 +282,11 @@ void loop() {
   BLECentral central = bleHID.central();
   if (central) {
     // central connected to peripheral
-    //digitalWrite(LED_stat, HIGH);
+
+    // Hacky way to send Feature report to Host PC.
     if (central.connected())
       HIDd.MaxTchCntReport();
+      
     while (central.connected()) {
       // Report touch data
       if(digitalRead(SYNA_INT) == 0)
