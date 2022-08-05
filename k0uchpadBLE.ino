@@ -324,5 +324,6 @@ void loop() {
     }// while central is connected.
 
     bleHID.clearBondStoreData();// reconnect bluetooth without restart nRF51
+    
   }
 }
