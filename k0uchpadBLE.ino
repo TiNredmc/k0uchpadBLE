@@ -321,16 +321,8 @@ void loop() {
         battlevelCharacteristic.setValue(100);
       }
 
-    }// while centril is connected.
+    }// while central is connected.
 
-    bleHID.clearBondStoreData();
-
-    if ((millis() - prev_mil) > 1000) {
-      prev_mil = millis();
-      digitalWrite(LED_stat, HIGH);
-      delay(1);
-      digitalWrite(LED_stat, LOW);
-    }
+    bleHID.clearBondStoreData();// reconnect bluetooth without restart nRF51
   }
-
 }
