@@ -9,7 +9,7 @@ uint8_t HIDpacket[16] = {0};
 
 static const PROGMEM unsigned char HID_Touch[] = {
   0x05,  0x0D,        // Usage page Digitizer
-  0x09,  0x04,        // Usage Touch screen
+  0x09,  0x05,        // Usage Trackpad
   0xA1,  0x01,        // Collection Application
   0x85,  0x01 ,     // Report ID 0x01
   0x05,  0x0D,      // Usage page Digitizer
