@@ -351,7 +351,7 @@ void loop() {
         digitalWrite(LED_stat, HIGH);
         delay(1);
         digitalWrite(LED_stat, LOW);
-        // Report battery level every 2 seconds.
+        // Report battery level every 1 seconds.
         battlevelCharacteristic.setValue(100);
       }
 
