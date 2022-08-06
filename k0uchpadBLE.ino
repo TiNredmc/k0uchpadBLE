@@ -7,10 +7,6 @@
 #include <BLEHIDPeripheral.h>
 #include "BLETouch.h"
 #include "MAX17050.h"
-/*  Update the min_conn_interval and max_conn_interval in BLEPeripheral-library-folder\src\nRF51822.cpp
-    gap_conn_params.min_conn_interval = 20;  // in 1.25ms units
-    gap_conn_params.max_conn_interval = 40;  // in 1.25ms unit
-*/
 
 #include <Wire.h>
 
@@ -227,7 +223,7 @@ void s3501_HIDreport() {
 // Read data from Keyboard scanner (STM8L151F3)
 // Key press order 6, 5, 4, 3, 2 and 1
 void kbd_read() {
-  len_cnt = 6;
+  uint8_t len_cnt = 6;
   Wire.requestFrom(KBD_ADDR, len_cnt);// Read request.
   while (Wire.available() && len_cnt--) {
     kbd_report[len_cnt] = Wire.read();
@@ -240,7 +236,7 @@ void kbd_sleep(uint8_t sleepflag) {
   if (sleepflag)
     Wire.write(0xAB);// Write sleep command
   else
-    Wire.write(0x00);// Any byte can wake STM8
+    Wire.write((uint8_t)0x00);// Any byte can wake STM8
     
   Wire.endTransmission();// End tx
 }
@@ -323,6 +319,7 @@ void loop() {
 
     while (central.connected()) {
       // Report touch data
+      // HIDd.KeyReport(0x04, 0,0,0,0); // Key report
       if (digitalRead(SYNA_INT) == 0)
         s3501_HIDreport();
       HIDd.TouchReport(
