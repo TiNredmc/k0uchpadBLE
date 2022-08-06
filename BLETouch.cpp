@@ -6,130 +6,173 @@
 #include <stdint.h>
 
 uint8_t HIDpacket[16] = {0};
+uint8_t key_report[8] = {0};
+
+/* Report IDs and their job
+   0x01 -> Absolute mouse report
+   0x02 -> Maximum finger Feature report
+   0x03 -> Keyboard report
+   0x44 -> Windows Blob report
+*/
 
 static const PROGMEM unsigned char HID_Touch[] = {
-  0x05,  0x0D,        // Usage page Digitizer
-  0x09,  0x05,        // Usage Trackpad
-  0xA1,  0x01,        // Collection Application
-  0x85,  0x01 ,     // Report ID 0x01
-  0x05,  0x0D,      // Usage page Digitizer
-  0x09,  0x22 ,     // Usage Finger
-  0xA1,  0x02  ,    // Collection Logical
-  0x09,  0x42  ,  // Usage Tip switch (Finger)
-  0x15,  0x00  ,  // Logical minimum 0
-  0x25,  0x01  ,  // Logical maximum 1
-  0x35,  0x00  ,  // Physical minimum 0
-  0x45,  0x01  ,  // Physical maximum 1
-  0x65,  0x00  ,  // Unit system none
-  0x55,  0x00  ,  // Unit exponent none
-  0x75,  0x01  ,  // Report size 1 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x95,  0x07  ,  // Report count 7 (Padding)
-  0x81,  0x03  ,  // Input Const Var Abs
+  /* Start HID Touch */
+  0x05, 0x0D,        // Usage page Digitizer
+      0x09, 0x04,        // Usage Touch screen
+      0xA1, 0x01,        // Collection Application
 
-  0x09,  0x51  ,  // Usage Contact Identifier
-  0x25,  0xFF  ,  // Logical Maximum 255
-  0x75,  0x08  ,  // Report size 8 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x09,  0x30  ,  // Usage Tip Pressure
-  0x81,  0x02  ,  // Input Data Var Abs
+      0x85, 0x01,     // Report ID 0x01
+      0x05, 0x0D,      // Usage page Digitizer
+      0x09, 0x22,     // Usage Finger
+      0xA1, 0x02,    // Collection Logical
 
-  0x05,  0x01  ,  // Usage page Generic Desktop
-  0x09,  0x30  ,  // Usage X
-  0x26,  0xA0  , 0x0C, // Logical maximum 3232
-  //0x46,  0xA0  ,0x0C, // Physical Maximum 3232
-  //0x65,  0x11  ,  // Unit SI linear cm (iirc)
-  //0x55,  0x0E  ,  // Unit exponent -4 (iirc)
-  0x75,  0x10  ,  // Report size 16 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x09,  0x31  ,  // Usage Y
-  0x26,  0x8A  , 0x03, // Logical maximum 906
-  //0x46,  0x8A  ,0x03, // Physical maximum 906
-  0x81,  0x02  ,  // Input Data Var Abs
+      0x09, 0x42,  // Usage Tip switch (Finger)
+      0x15, 0x00,  // Logical minimum 0
+      0x25, 0x01,  // Logical maximum 1
+      0x35, 0x00,  // Physical minimum 0
+      0x45, 0x01,  // Physical maximum 1
+      0x65, 0x00,  // Unit system none
+      0x55, 0x00,  // Unit exponent none
+      0x75, 0x01,  // Report size 1 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x95, 0x07,  // Report count 7 (Padding)
+      0x81, 0x03,  // Input Const Var Abs
 
-  0xC0 ,// End collection (Logical)
+      0x09, 0x51,  // Usage Contact Identifier
+      0x25, 0xFF,  // Logical Maximum 255
+      0x75, 0x08,  // Report size 8 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x09, 0x30,  // Usage Tip Pressure
+      0x81, 0x02,  // Input Data Var Abs
 
-  0x05,  0x0D,      // Usage page Digitizer
-  0x09,  0x22 ,     // Usage Finger
-  0xA1,  0x02  ,    // Collection Logical
-  0x09,  0x42  ,  // Usage Tip switch (Finger)
-  0x15,  0x00  ,  // Logical minimum 0
-  0x25,  0x01  ,  // Logical maximum 1
-  0x35,  0x00  ,  // Physical minimum 0
-  0x45,  0x01  ,  // Physical maximum 1
-  0x65,  0x00  ,  // Unit system none
-  0x55,  0x00  ,  // Unit exponent none
-  0x75,  0x01  ,  // Report size 1 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x95,  0x07  ,  // Report count 7 (Padding)
-  0x81,  0x03  ,  // Input Const Var Abs
+      0x05, 0x01,  // Usage page Generic Desktop
+      0x09, 0x30,  // Usage X
+      0x26, 0xA0, 0x0C, // Logical maximum 3232
+      //0x46, 0xA0, 0x0C, // Physical Maximum 3232
+      //0x65, 0x11,  // Unit SI linear cm (iirc)
+      //0x55, 0x0E,  // Unit exponent -4 (iirc)
+      0x75, 0x10,  // Report size 16 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x09, 0x31,  // Usage Y
+      0x26, 0x8A, 0x03, // Logical maximum 906
+      //0x46,  0x8A  ,0x03, // Physical maximum 906
+      0x81, 0x02,  // Input Data Var Abs
 
-  0x09,  0x51  ,  // Usage Contact Identifier
-  0x25,  0xFF  ,  // Logical Maximum 255
-  0x75,  0x08  ,  // Report size 8 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x09,  0x30  ,  // Usage Tip Pressure
-  0x81,  0x02  ,  // Input Data Var Abs
+      0xC0 ,// End collection (Logical)
 
-  0x05,  0x01  ,  // Usage page Generic Desktop
-  0x09,  0x30  ,  // Usage X
-  0x26,  0xA0  , 0x0C, // Logical maximum 3232
-  //0x46,  0xA0  ,0x0C, // Physical Maximum 3232
-  //0x65,  0x11  ,  // Unit SI linear cm (iirc)
-  //0x55,  0x0E  ,  // Unit exponent -4 (iirc)
-  0x75,  0x10  ,  // Report size 16 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
-  0x09,  0x31  ,  // Usage Y
-  0x26,  0x8A  , 0x03, // Logical maximum 906
-  //0x46,  0x8A  ,0x03, // Physical maximum 906
-  0x81,  0x02  ,  // Input Data Var Abs
+      0x05, 0x0D,      // Usage page Digitizer
+      0x09, 0x22,     // Usage Finger
+      0xA1, 0x02,    // Collection Logical
 
-  0xC0 ,// End collection (Logical)
+      0x09, 0x42,  // Usage Tip switch (Finger)
+      0x15, 0x00,  // Logical minimum 0
+      0x25, 0x01,  // Logical maximum 1
+      0x35, 0x00,  // Physical minimum 0
+      0x45, 0x01,  // Physical maximum 1
+      0x65, 0x00,  // Unit system none
+      0x55, 0x00,  // Unit exponent none
+      0x75, 0x01,  // Report size 1 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x95, 0x07,  // Report count 7 (Padding)
+      0x81, 0x03,  // Input Const Var Abs
 
-  0x05,  0x0D  ,  // Usage page Digitizer
-  0x09,  0x54  ,  // Usage contact count
-  0x25,  0x0A  ,  // Logical Maximum 10
-  0x75,  0x08  ,  // Report size 8 bit
-  0x95,  0x01  ,  // Report count 1
-  0x81,  0x02  ,  // Input Data Var Abs
+      0x09, 0x51,  // Usage Contact Identifier
+      0x25, 0xFF,  // Logical Maximum 255
+      0x75, 0x08,  // Report size 8 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x09, 0x30,  // Usage Tip Pressure
+      0x81, 0x02,  // Input Data Var Abs
 
-  // Necessary Feature report that Windows OS required.
-  // necessary to respond to CUSTOM_HID_REQ_GET_REPORT.
-  // and return the Maximum contact (finger) number supported.
-  0x85,  0x02  ,  // Report ID 0x02
-  0x09,  0x55  ,  // Usage Contact Count Maximum
-  0x25,  0x0A  ,  // Logical Maximum 10
-  0x65,  0x00  ,  // Unit system none
-  0x55,  0x00  ,  // Unit exponent none
-  0x75,  0x08  ,  // report size 8 bit
-  0x95,  0x01  ,  // report count 1
-  0xB1,  0x02  ,  // Feature Data Var Abs
+      0x05, 0x01,  // Usage page Generic Desktop
+      0x09, 0x30,  // Usage X
+      0x26, 0xA0, 0x0C, // Logical maximum 3232
+      //0x46, 0xA0, 0x0C, // Physical Maximum 3232
+      //0x65, 0x11,  // Unit SI linear cm (iirc)
+      //0x55, 0x0E,  // Unit exponent -4 (iirc)
+      0x75, 0x10,  // Report size 16 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+      0x09, 0x31,  // Usage Y
+      0x26, 0x8A, 0x03, // Logical maximum 906
+      //0x46,  0x8A  ,0x03, // Physical maximum 906
+      0x81, 0x02,  // Input Data Var Abs
 
-  // Necessary Feature report that Windows OS required.
-  // But Not necessary to send the actual blob data.
-  0x85, 0x44,                         //   REPORT_ID (Feature)
-  0x06, 0x00, 0xff,                   //   USAGE_PAGE (Vendor Defined)
-  0x09, 0xC5,                         //   USAGE (Vendor Usage 0xC5)
-  0x15, 0x00,                         //   LOGICAL_MINIMUM (0)
-  0x26, 0xff, 0x00,                   //   LOGICAL_MAXIMUM (0xff)
-  0x75, 0x08,                         //   REPORT_SIZE (8)
-  0x96, 0x00,  0x01,                  //   REPORT_COUNT (0x100 (256))
-  0xb1, 0x02,                         //   FEATURE (Data,Var,Abs)
-  0xC0 // End collection (Application)
+      0xC0 ,// End collection (Logical)
+
+      0x05, 0x0D,  // Usage page Digitizer
+      0x09, 0x54,  // Usage contact count
+      0x25, 0x0A,  // Logical Maximum 10
+      0x75, 0x08,  // Report size 8 bit
+      0x95, 0x01,  // Report count 1
+      0x81, 0x02,  // Input Data Var Abs
+
+      // Necessary Feature report that Windows OS required.
+      // necessary to respond to CUSTOM_HID_REQ_GET_REPORT.
+      // and return the Maximum contact (finger) number supported.
+      0x85, 0x02,  // Report ID 0x02
+      0x09, 0x55,  // Usage Contact Count Maximum
+      0x25, 0x0A,  // Logical Maximum 10
+      0x65, 0x00,  // Unit system none
+      0x55, 0x00,  // Unit exponent none
+      0x75, 0x08,  // report size 8 bit
+      0x95, 0x01,  // report count 1
+      0xB1, 0x02,  // Feature Data Var Abs
+
+      // Necessary Feature report that Windows OS required.
+      // But Not necessary to send the actual blob data.
+      0x85, 0x44,                         //   REPORT_ID (Feature)
+      0x06, 0x00, 0xff,                   //   USAGE_PAGE (Vendor Defined)
+      0x09, 0xC5,                         //   USAGE (Vendor Usage 0xC5)
+      0x15, 0x00,                         //   LOGICAL_MINIMUM (0)
+      0x26, 0xff, 0x00,                   //   LOGICAL_MAXIMUM (0xff)
+      0x75, 0x08,                         //   REPORT_SIZE (8)
+      0x96, 0x00, 0x01,                  //   REPORT_COUNT (0x100 (256))
+      0xB1, 0x02,                         //   FEATURE (Data,Var,Abs)
+
+      0xC0, // End collection (Application)
+      /* End HID Touch */
+
+      /* Start HID Keyboard */
+      0x05, 0x01, // Usage page Desktop
+      0x09, 0x06, // Usage Keyboard
+      0xA1, 0x01, // Collection (Application)
+      0x85, 0x03, // Report ID 0x03
+      0x75, 0x01, // Report size 1 bit
+      0x95, 0x08, // Report count 8 (8 Modifier Key)
+      0x05, 0x07, // Usage page Keyboard Keycode
+      0x19, 0xE0, // Usage minimum 224
+      0x29, 0xE7, // Usage maximum 231
+      0x15, 0x00, // Logical min 0
+      0x25, 0x01, // Logical max 1
+      0x81, 0x02, // Input Data Var Abs
+      0x75, 0x01, // Report size 8 bit
+      0x95, 0x08, // Report count 1 (1 padding byte)
+      0x81, 0x03, // Input Const Var Abs
+
+      0x75, 0x08, // Report size 8 bit
+      0x95, 0x05, // Report count 5 keys
+      0x15, 0x00, // Logical min 0
+      0x26, 0xA4, 0x00, // Logical max 164
+      0x05, 0x07, // Usage page Keyboard Keycode
+      0x19, 0x00, // Usage min 0
+      0x2A, 0xA4, 0x00, // Usage max 164
+      0x81, 0x00, // Input Data Array Abs
+
+      0xC0 // End collection (Logical)
+  /* End HID Keyboard */
 };
 
 
 BLETouch::BLETouch() :
   BLEHID(HID_Touch, sizeof(HID_Touch), 11),// Number 11 is offset to the first report ID.
   _reportCharacteristic("2a4d", BLERead | BLENotify, 16),// 16 Bytes report size of Touch.
-  _reportCharacteristic2("2a4d", BLERead | BLENotify | BLEWrite, 2),// 2 Bytes  report size of Max contact count.
-  _reportReferenceDescriptor(BLEHIDDescriptorTypeInput),// For HID rouch report.
+  _reportCharacteristic2("2a4d", BLERead | BLENotify | BLEWrite, 2),// 2 Bytes report size of Max contact count.
+  _reportReferenceDescriptor(BLEHIDDescriptorTypeInput),// For HID touch report.
   _reportReferenceDescriptor2(BLEHIDDescriptorTypeFeature)// For Feature report (Max contact count).
 {
 }
@@ -143,6 +186,31 @@ void BLETouch::MaxTchCntReport() {
   this->sendData(this->_reportCharacteristic2, HIDpacket, 2);
 }
 
+// Report Keyboard keycode, Up to 5 keys
+void BLETouch::KeyReport(
+  uint8_t key1,
+  uint8_t key2,
+  uint8_t key3,
+  uint8_t key4,
+  uint8_t key5) {
+
+  key_report[0] = 0x03;// Report ID 0x03
+  key_report[1] = 0x00;// Modifier key
+  key_report[2] = 0x0;// Constant (No use).
+  key_report[3] = key1;
+  key_report[4] = key2;
+  key_report[5] = key3;
+  key_report[6] = key4;
+  key_report[7] = key5;
+
+  this->_reportReferenceDescriptor.setReportId(key_report[0]);
+  this->sendData(this->_reportCharacteristic, key_report, 8);
+  for (uint8_t i = 1; i < 6; i++)
+    key_report[i] = 0;
+}
+
+
+// Report Touch event of two fingers
 void BLETouch::TouchReport(
   uint8_t Finger1_present,
   uint8_t Finger1_pressure,
@@ -182,7 +250,7 @@ void BLETouch::TouchReport(
 
   // Report finger (contact point) count.
   HIDpacket[15] = HIDpacket[1] + HIDpacket[8];
-
+  this->_reportReferenceDescriptor.setReportId(HIDpacket[0]);
   this->sendData(this->_reportCharacteristic, HIDpacket, 16);
 }
 
