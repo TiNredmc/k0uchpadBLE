@@ -14,6 +14,14 @@
 
 #include <Wire.h>
 
+// GPIOs
+#define SYNA_INT 10 // P5 (Chip pin is pin 3) as Synaptics Interrupt (but use for polling).
+#define SYNA_RST  9 // P6 (Chip pin is pin 4) as Synaptics Reset pin.
+#define LED_stat 4 // P8 (Chip pin is pin 10) as LED backlight / Status LED.
+#define KB_INT  13  // P9 (Chip pin is pin 13) as STM8L Keyboard scanner Interrupt.
+
+/* Synaptics stuffs*/
+
 /* I2C 7bit address of S3501 */
 #define S3501_ADDR  0x20
 
@@ -23,11 +31,6 @@
 #define RMI4_F1A  0x1A // Button 
 #define RMI4_F54  0x54 // Test report
 #define RMI4_F55  0x55 // TX, RX configuration
-
-#define SYNA_INT 10 // P5 (Chip pin is pin 3) as Synaptics Interrupt (but use for polling).
-#define SYNA_RST  9 // P6 (Chip pin is pin 4) as Synaptics Reset pin.
-#define LED_stat 4 // P8 (Chip pin is pin 10) as LED backlight / Status LED.
-#define KB_INT  13  // P9 (Chip pin is pin 13) as STM8L Keyboard scanner Interrupt.
 
 // Save current page
 uint8_t current_page = 0;
@@ -50,6 +53,16 @@ uint8_t F12_report_addr = 0;// Store ACTUAL HID data report address of F12.
 // General purpose array for reading various report (Query, Control, HID data).
 // Share same variable to save RAM
 uint8_t report[90];
+
+/* End Syanaptics Stuffs */
+
+/* KBD Maxtrix scanner (STM8L151F3) */
+// 7 bit address of STM8L151F3
+#define KBD_ADDR 0x28
+
+uint8_t kbd_report[6] = {0};
+
+/* En KBD Matrix scanner (STM8L151F3) */
 
 // for fuel gauge status
 uint8_t gauge_failed = 0;// if probing is failed, this will set to 1 and will avoid atempting to read from fuel gauge.
@@ -98,7 +111,7 @@ void s3501_read(uint8_t addr, uint8_t *data, uint8_t len) {
   while (Wire.available() && len--) {
     *data++ = Wire.read();
   }
- 
+
 }
 
 // Write data to S3501
@@ -207,8 +220,29 @@ void s3501_HIDreport() {
   // report[87] is 0x01
 
   s3501_setPage(0);// Set page 0 to get data from F12.
-  s3501_read(F12_report_addr-1, report, 1);// Read from Data register of F12
+  s3501_read(F12_report_addr - 1, report, 1); // Read from Data register of F12
   s3501_read(F12_report_addr, report, 88);// Read from Data register of F12
+}
+
+// Read data from Keyboard scanner (STM8L151F3)
+// Key press order 6, 5, 4, 3, 2 and 1
+void kbd_read() {
+  len_cnt = 6;
+  Wire.requestFrom(KBD_ADDR, len_cnt);// Read request.
+  while (Wire.available() && len_cnt--) {
+    kbd_report[len_cnt] = Wire.read();
+  }
+}
+
+// Put STM8L to sleep mode
+void kbd_sleep(uint8_t sleepflag) {
+  Wire.beginTransmission(KBD_ADDR);// Begin tx
+  if (sleepflag)
+    Wire.write(0xAB);// Write sleep command
+  else
+    Wire.write(0x00);// Any byte can wake STM8
+    
+  Wire.endTransmission();// End tx
 }
 
 uint8_t err = 0;
@@ -243,21 +277,21 @@ void setup() {
   }
 
   // fuel gauge probing
-//  gauge_failed = 1;
-//  if (FuelGauge.max17050_init()) {
-//    // slow blink to indicates fuel gauge probing error and then continue
-//    digitalWrite(LED_stat, HIGH);
-//    delay(500);
-//    digitalWrite(LED_stat, LOW);
-//    delay(500);
-//    digitalWrite(LED_stat, HIGH);
-//    delay(500);
-//    digitalWrite(LED_stat, LOW);
-//    delay(500);
-//    gauge_failed = 1;
-//  } else {
-//    gauge_failed = 0;
-//  }
+  //  gauge_failed = 1;
+  //  if (FuelGauge.max17050_init()) {
+  //    // slow blink to indicates fuel gauge probing error and then continue
+  //    digitalWrite(LED_stat, HIGH);
+  //    delay(500);
+  //    digitalWrite(LED_stat, LOW);
+  //    delay(500);
+  //    digitalWrite(LED_stat, HIGH);
+  //    delay(500);
+  //    digitalWrite(LED_stat, LOW);
+  //    delay(500);
+  //    gauge_failed = 1;
+  //  } else {
+  //    gauge_failed = 0;
+  //  }
 
   // Battery service
   bleHID.setAdvertisedServiceUuid(batteryService.uuid());
@@ -286,10 +320,10 @@ void loop() {
     // Hacky way to send Feature report to Host PC.
     if (central.connected())
       HIDd.MaxTchCntReport();
-      
+
     while (central.connected()) {
       // Report touch data
-      if(digitalRead(SYNA_INT) == 0)
+      if (digitalRead(SYNA_INT) == 0)
         s3501_HIDreport();
       HIDd.TouchReport(
         // Finger 1
@@ -324,6 +358,5 @@ void loop() {
     }// while central is connected.
 
     bleHID.clearBondStoreData();// reconnect bluetooth without restart nRF51
-    
   }
 }
