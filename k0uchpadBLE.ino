@@ -11,9 +11,9 @@
 #include <Wire.h>
 
 // GPIOs
-#define SYNA_INT 10 // P5 (Chip pin is pin 3) as Synaptics Interrupt (but use for polling).
-#define SYNA_RST  9 // P6 (Chip pin is pin 4) as Synaptics Reset pin.
-#define LED_stat 4 // P8 (Chip pin is pin 10) as LED backlight / Status LED.
+#define SYNA_INT 10 // P8 (Chip pin is pin 10) as Synaptics Interrupt (but use for polling).
+#define SYNA_RST  9 // P7 (Chip pin is pin 9) as Synaptics Reset pin.
+#define LED_stat 4 // P6 (Chip pin is pin 4) as LED backlight / Status LED.
 #define KB_INT  13  // P9 (Chip pin is pin 13) as STM8L Keyboard scanner Interrupt.
 
 /* Synaptics stuffs*/
@@ -54,7 +54,7 @@ uint8_t report[90];
 
 /* KBD Maxtrix scanner (STM8L151F3) */
 // 7 bit address of STM8L151F3
-#define KBD_ADDR 0x28
+#define KBD_ADDR 0x69
 
 uint8_t kbd_report[6] = {0};
 
@@ -65,6 +65,12 @@ uint8_t gauge_failed = 0;// if probing is failed, this will set to 1 and will av
 
 // for heartbeat led
 unsigned long prev_mil = 0;
+
+
+// User experience related stuffs.
+uint8_t double_tap = 0;// use for detect double tapping to enable trackpad.
+unsigned long double_tap_millis = 0;
+unsigned long double_tap_timeout = 0;
 
 // define pins (varies per shield/board)
 #define BLE_REQ   6
@@ -174,6 +180,7 @@ uint8_t s3501_query() {
     return 3;
   }
 
+  s3501_read(F12_report_addr - 1, report, 1); // Clear interrupt
   return 0;
 
 }
@@ -216,7 +223,7 @@ void s3501_HIDreport() {
   // report[87] is 0x01
 
   s3501_setPage(0);// Set page 0 to get data from F12.
-  s3501_read(F12_report_addr - 1, report, 1); // Read from Data register of F12
+  s3501_read(F12_report_addr - 1, report, 1); // Clear interrupt
   s3501_read(F12_report_addr, report, 88);// Read from Data register of F12
 }
 
@@ -237,17 +244,19 @@ void kbd_sleep(uint8_t sleepflag) {
     Wire.write(0xAB);// Write sleep command
   else
     Wire.write((uint8_t)0x00);// Any byte can wake STM8
-    
+
   Wire.endTransmission();// End tx
 }
 
 uint8_t err = 0;
 void setup() {
   pinMode(SYNA_INT, INPUT_PULLUP);
+  pinMode(KB_INT, INPUT_PULLUP);
   pinMode(SYNA_RST, OUTPUT);
   pinMode(LED_stat, OUTPUT);
-
+  
   digitalWrite(SYNA_RST, HIGH);
+  
 
   digitalWrite(LED_stat, HIGH);
   delay(100);
@@ -318,29 +327,18 @@ void loop() {
       HIDd.MaxTchCntReport();
 
     while (central.connected()) {
-      // Report touch data
-      // HIDd.KeyReport(0x04, 0,0,0,0); // Key report
-      if (digitalRead(SYNA_INT) == 0)
-        s3501_HIDreport();
-      HIDd.TouchReport(
-        // Finger 1
-        report[0],// Finger 1 present
-        report[5],// Pressure
-        report[1],// X LSB
-        report[2],// X MSB
-        report[3],// Y LSB
-        report[4],// Y MSB
-
-        // Finger 2
-        report[8],// Finger 2 present
-        report[13],// Pressure
-        report[9],// X LSB
-        report[10],// X MSB
-        report[11],// Y LSB
-        report[12]// Y MSB
-      );// Send Bluetooth HID report
-
-      //delay(9);// delay 1ms, throttle down the crazy polling rate.
+      // report keyboard data
+      if (!(NRF_GPIO->IN & (1 << KB_INT))) {
+        kbd_read();
+        double_tap = 0;
+        HIDd.KeyReport(
+          kbd_report[0],
+          kbd_report[1],
+          kbd_report[2],
+          kbd_report[3],
+          kbd_report[4],
+          kbd_report[5]); // Key report
+      }
 
       // Heartbeat LED.
       if ((millis() - prev_mil) > 1000) {
@@ -351,6 +349,64 @@ void loop() {
         // Report battery level every 1 seconds.
         battlevelCharacteristic.setValue(100);
       }
+
+      if (((millis() - double_tap_timeout) > 3000) && (double_tap == 2)) { // 3 seconds elapsed with no activity
+        double_tap_timeout = millis();
+        double_tap = 0;// Disable trackpad mode.
+      }
+
+      // Report touch data
+      if (!(NRF_GPIO->IN & (1 << SYNA_INT))) {
+        s3501_HIDreport();
+
+        //double_tap++;
+        switch (double_tap) {
+          case 0:// 1st timestamp. Detect finger lift 1st time
+            double_tap_millis = millis();
+            if (report[0] == 0) {
+              double_tap = 1;
+            }
+            break;
+
+          case 1:// Detect finger lift 2nd time
+            if (report[0] == 0) {
+              double_tap_timeout = millis();
+              double_tap = 2;
+            }
+            break;
+
+          case 2:// Enter trackpad mode, timeout and exit after 3 seconds.
+            double_tap_timeout = millis();
+
+            if (!(NRF_GPIO->IN & (1 << KB_INT))) {// Key press immediately exit trackpad mode.
+              double_tap = 0;
+              break;
+            }
+
+            HIDd.TouchReport(
+              // Finger 1
+              report[0],// Finger 1 present
+              report[5],// Pressure
+              report[1],// X LSB
+              report[2],// X MSB
+              report[3],// Y LSB
+              report[4],// Y MSB
+
+              // Finger 2
+              report[8],// Finger 2 present
+              report[13],// Pressure
+              report[9],// X LSB
+              report[10],// X MSB
+              report[11],// Y LSB
+              report[12]// Y MSB
+            );// Send Bluetooth HID report
+
+            break;
+        }
+      }
+      //delay(9);// delay 1ms, throttle down the crazy polling rate.
+
+
 
     }// while central is connected.
 
