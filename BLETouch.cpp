@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 uint8_t HIDpacket[16] = {0};
-uint8_t key_report[8] = {0};
+uint8_t key_report[9] = {0};
 
 /* Report IDs and their job
    0x01 -> Absolute mouse report
@@ -155,7 +155,7 @@ static const PROGMEM unsigned char HID_Touch[] = {
       0x81, 0x03, // Input Const Var Abs
 
       0x75, 0x08, // Report size 8 bit
-      0x95, 0x05, // Report count 5 keys
+      0x95, 0x06, // Report count 6 keys
       0x15, 0x00, // Logical min 0
       0x26, 0xA4, 0x00, // Logical max 164
       0x05, 0x07, // Usage page Keyboard Keycode
@@ -192,7 +192,8 @@ void BLETouch::KeyReport(
   uint8_t key2,
   uint8_t key3,
   uint8_t key4,
-  uint8_t key5) {
+  uint8_t key5,
+  uint8_t key6) {
 
   key_report[0] = 0x03;// Report ID 0x03
   key_report[1] = 0x00;// Modifier key
@@ -202,9 +203,10 @@ void BLETouch::KeyReport(
   key_report[5] = key3;
   key_report[6] = key4;
   key_report[7] = key5;
-
+  key_report[8] = key6;
+  
   this->_reportReferenceDescriptor.setReportId(key_report[0]);
-  this->sendData(this->_reportCharacteristic, key_report, 8);
+  this->sendData(this->_reportCharacteristic, key_report, 9);
   for (uint8_t i = 1; i < 6; i++)
     key_report[i] = 0;
 }
