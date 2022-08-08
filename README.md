@@ -16,3 +16,13 @@ Arduino configuration *IMPORTANT*
 Known Issue(s)
 =
 1. HID report rate is noticeably slow at first bluetooth connection *Solved by reconnect the bluetooth*
+
+STM8L151F3 (Key matrix scanner) source code.
+=
+
+[I2C-BBKB_scanner](https://github.com/TiNredmc/stm8l_sdcc_template/tree/master/code/I2C-BBKB_scanner)
+
+Schematic and PCB
+=
+
+coming soon.
