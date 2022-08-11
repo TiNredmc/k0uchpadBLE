@@ -50,15 +50,17 @@ static const PROGMEM unsigned char HID_Touch[] = {
       0x05, 0x01,  // Usage page Generic Desktop
       0x09, 0x30,  // Usage X
       0x26, 0xA0, 0x0C, // Logical maximum 3232
-      //0x46, 0xA0, 0x0C, // Physical Maximum 3232
-      //0x65, 0x11,  // Unit SI linear cm (iirc)
-      //0x55, 0x0E,  // Unit exponent -4 (iirc)
+      //0x46, 0x66, 0x03, // Physical Maximum 870 (mm)
+      //0x65, 0x11,  // Unit SI linear cm 
+      //0x55, 0x0E,  // Unit exponent -2 
       0x75, 0x10,  // Report size 16 bit
       0x95, 0x01,  // Report count 1
       0x81, 0x02,  // Input Data Var Abs
       0x09, 0x31,  // Usage Y
       0x26, 0x8A, 0x03, // Logical maximum 906
-      //0x46,  0x8A  ,0x03, // Physical maximum 906
+      //0x46, 0xE6, 0x00, // Physical Maximum 230 (mm)
+      //0x65, 0x11,  // Unit SI linear cm 
+      //0x55, 0x0E,  // Unit exponent -2 
       0x81, 0x02,  // Input Data Var Abs
 
       0xC0 ,// End collection (Logical)
@@ -91,15 +93,17 @@ static const PROGMEM unsigned char HID_Touch[] = {
       0x05, 0x01,  // Usage page Generic Desktop
       0x09, 0x30,  // Usage X
       0x26, 0xA0, 0x0C, // Logical maximum 3232
-      //0x46, 0xA0, 0x0C, // Physical Maximum 3232
-      //0x65, 0x11,  // Unit SI linear cm (iirc)
-      //0x55, 0x0E,  // Unit exponent -4 (iirc)
+      //0x46, 0x66, 0x03, // Physical Maximum 870 (mm)
+      //0x65, 0x11,  // Unit SI linear cm 
+      //0x55, 0x0E,  // Unit exponent -2 
       0x75, 0x10,  // Report size 16 bit
       0x95, 0x01,  // Report count 1
       0x81, 0x02,  // Input Data Var Abs
       0x09, 0x31,  // Usage Y
       0x26, 0x8A, 0x03, // Logical maximum 906
-      //0x46,  0x8A  ,0x03, // Physical maximum 906
+      //0x46, 0xE6, 0x00, // Physical Maximum 230 (mm)
+      //0x65, 0x11,  // Unit SI linear cm 
+      //0x55, 0x0E,  // Unit exponent -2 
       0x81, 0x02,  // Input Data Var Abs
 
       0xC0 ,// End collection (Logical)
@@ -143,7 +147,7 @@ static const PROGMEM unsigned char HID_Touch[] = {
       0xA1, 0x01, // Collection (Application)
       0x85, 0x03, // Report ID 0x03
       0x75, 0x01, // Report size 1 bit
-      0x95, 0x08, // Report count 8 (8 Modifier Key)
+      0x95, 0x08, // Report count 8 (8 Modifier Key, 1 bytes)
       0x05, 0x07, // Usage page Keyboard Keycode
       0x19, 0xE0, // Usage minimum 224
       0x29, 0xE7, // Usage maximum 231
@@ -164,7 +168,7 @@ static const PROGMEM unsigned char HID_Touch[] = {
       0x81, 0x00, // Input Data Array Abs
 
       0xC0 // End collection (Logical)
-  /* End HID Keyboard */
+      /* End HID Keyboard */
 };
 
 
